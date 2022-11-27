@@ -4,7 +4,7 @@ from django.test import TestCase
 from unittest.mock import patch
 
 
-class TestCommand(TestCase):
+class CommandTest(TestCase):
 
     def test_wait_for_db_ready(self):
         '''test waiting for db when db is available'''
