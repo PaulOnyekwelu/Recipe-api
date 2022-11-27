@@ -4,7 +4,7 @@ from django.contrib.auth.models import (
 
 
 class AuthUserManager(BaseUserManager):
-    '''Auth manager for the AuthUserModel'''
+    '''Auth manager for the AuthUser Model'''
 
     def create_user(self, email, password=None, **extra_field):
         '''create and return a new user'''
@@ -28,7 +28,7 @@ class AuthUserManager(BaseUserManager):
         return user
 
 
-class AuthUserModel(AbstractBaseUser, PermissionsMixin):
+class AuthUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=100, unique=True)
     name = models.CharField(max_length=255, null=False)
     is_active = models.BooleanField(default=True)
