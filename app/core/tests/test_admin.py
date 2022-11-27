@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 
 
-class TestAdmin(TestCase):
+class AdminTest(TestCase):
     '''test suite for the admin site'''
 
     def setUp(self):

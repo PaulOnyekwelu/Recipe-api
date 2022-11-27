@@ -2,8 +2,8 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 
 
-class TestModels(TestCase):
-    '''test cases for models'''
+class ModelTest(TestCase):
+    '''test suite for models'''
 
     def test_create_user_with_email_successful(self):
         '''test successfully creation of users with email and password'''
