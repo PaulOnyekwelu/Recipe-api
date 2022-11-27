@@ -23,7 +23,7 @@ jobs:
           command: docker-compose run -d db
       - run:
           name: run test and linting
-          command: docker-compose run app sh -c 'python manage.py test && flake8'
+          command: docker-compose run app sh -c 'python manage.py wait_for_db && python manage.py test && flake8'
 
 workflows:
   django-workflow:
