@@ -5,6 +5,9 @@ from core import models
 
 # Register your models here.
 
+admin.site.site_header = 'Recipe-API'
+admin.site.index_title = 'Admin Recipe-API'
+
 
 @admin.register(models.AuthUser)
 class AuthUserAdmin(UserAdmin):
