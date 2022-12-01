@@ -35,3 +35,9 @@ class AuthUserAdmin(UserAdmin):
             'fields': ('email', 'password1', 'password2')
         }),
     )
+
+
+@admin.register(models.Tag)
+class TagAdmin(admin.ModelAdmin):
+    '''register tag model to admin app'''
+    list_display = ('name', 'user')
