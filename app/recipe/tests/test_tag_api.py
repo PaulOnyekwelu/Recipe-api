@@ -51,7 +51,7 @@ class PrivateTagTest(TestCase):
         self.assertEqual(res.data, serializer.data)
 
     def test_tags_listing_limited_to_auth_user(self):
-        '''test that return tags belong to authenticated user'''
+        '''test that returned tags belong to authenticated user'''
         user2 = create_sample_user('other@domain.com', 'test222')
         Tag.objects.create(user=user2, name='Flaky')
         tag = Tag.objects.create(user=self.user, name='Vegan')
@@ -65,11 +65,12 @@ class PrivateTagTest(TestCase):
     def test_create_tag_success(self):
         '''test that tags are created successfully'''
         payload = {'name': 'Testy'}
-        self.client.post(TAG_LIST_URL, payload)
+        res = self.client.post(TAG_LIST_URL, payload)
 
         exist = Tag.objects.filter(
             user=self.user, name=payload['name']).exists()
 
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         self.assertTrue(exist)
 
     def test_create_tag_invalid(self):
