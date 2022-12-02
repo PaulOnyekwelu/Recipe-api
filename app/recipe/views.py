@@ -21,13 +21,13 @@ class BaseRecipeAttr(ListModelMixin, CreateModelMixin, GenericViewSet):
         serializer.save(user=self.request.user)
 
 
-class TagViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
+class TagViewSet(BaseRecipeAttr):
     '''list and create api endpoints for tag model'''
     queryset = models.Tag.objects.all()
     serializer_class = serializers.TagSerializer
 
 
-class IngredientViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
+class IngredientViewSet(BaseRecipeAttr):
     '''list and create api endpoints for ingredient model'''
     queryset = models.Ingredient.objects.all()
     serializer_class = serializers.IngredientSerializer
