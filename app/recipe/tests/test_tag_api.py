@@ -8,7 +8,7 @@ from core.models import Tag
 from recipe.serializers import TagSerializer
 
 
-TAG_LIST_URL = reverse('recipe:tags-list')
+TAG_LIST_URL = reverse('recipe:tag-list')
 
 
 def create_sample_user(email='test@domain.com', password='testPass'):
