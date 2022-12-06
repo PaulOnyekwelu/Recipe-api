@@ -1,3 +1,4 @@
+from unittest.mock import patch
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
@@ -72,3 +73,14 @@ class ModelTest(TestCase):
         )
 
         self.assertEqual(str(recipe), recipe.title)
+
+    @patch('uuid.uuid4')
+    def test_upload_recipe_image_file_path(self, mock_patch):
+        '''test that images are uploaded to correct path'''
+        uuid_val = 'UUIDVALUE'
+        mock_patch.return_value = uuid_val
+
+        file_path = models.recipe_image_file_path(None, 'test_image.jpg')
+        expected_path = f'uploads/recipe/{uuid_val}.jpg'
+
+        self.assertEqual(file_path, expected_path)

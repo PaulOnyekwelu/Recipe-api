@@ -1,7 +1,10 @@
+import tempfile
+import os
+from PIL import Image
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-
 from rest_framework import status
 from rest_framework.test import APIClient
 
@@ -14,6 +17,11 @@ RECIPE_LIST_URL = reverse('recipe:recipe-list')
 def compute_recipe_detail_url(recipe_id):
     '''compute and return a recipe detail url'''
     return reverse('recipe:recipe-detail', args=[recipe_id])
+
+
+def compute_recipe_image_upload_url(recipe_id):
+    '''compute and return a recipe image upload url'''
+    return reverse('recipe:recipe-upload-image', args=[recipe_id])
 
 
 def create_sample_user(**params):
@@ -210,3 +218,89 @@ class PrivateRecipeAPITest(TestCase):
         self.assertEqual(recipe.price, payload['price'])
         self.assertEqual(len(tags), 0)
         self.assertEqual(len(ingredients), 0)
+
+    def test_filter_recipe_by_tags(self):
+        '''test the functionality of filtering recipe by tag'''
+        recipe1 = create_sample_recipe(user=self.user, title='recipe1')
+        recipe2 = create_sample_recipe(user=self.user, title='recipe2')
+        recipe3 = create_sample_recipe(user=self.user, title='recipe3')
+        tag1 = create_sample_tag(user=self.user, name='tag1')
+        tag2 = create_sample_tag(user=self.user, name='tag2')
+
+        recipe1.tags.add(tag1)
+        recipe2.tags.add(tag2)
+
+        res = self.client.get(
+            RECIPE_LIST_URL, {'tags': f'{tag1.id},{tag2.id}'})
+
+        serializer1 = RecipeSerializer(recipe1)
+        serializer2 = RecipeSerializer(recipe2)
+        serializer3 = RecipeSerializer(recipe3)
+
+        self.assertEqual(len(res.data), 2)
+        self.assertIn(serializer1.data, res.data)
+        self.assertIn(serializer2.data, res.data)
+        self.assertNotIn(serializer3.data, res.data)
+
+    def test_filter_recipe_by_ingredients(self):
+        '''test the functionality of filtering recipe by ingredient'''
+        recipe1 = create_sample_recipe(user=self.user, title='recipe1')
+        recipe2 = create_sample_recipe(user=self.user, title='recipe2')
+        recipe3 = create_sample_recipe(user=self.user, title='recipe3')
+        ingredient1 = create_sample_ingredient(
+            user=self.user, name='ingredient1')
+        ingredient2 = create_sample_ingredient(
+            user=self.user, name='ingredient2')
+
+        recipe1.ingredients.add(ingredient1)
+        recipe2.ingredients.add(ingredient2)
+
+        res = self.client.get(
+            RECIPE_LIST_URL,
+            {'ingredients': f'{ingredient1.id},{ingredient2.id}'}
+        )
+
+        serializer1 = RecipeSerializer(recipe1)
+        serializer2 = RecipeSerializer(recipe2)
+        serializer3 = RecipeSerializer(recipe3)
+
+        self.assertEqual(len(res.data), 2)
+        self.assertIn(serializer1.data, res.data)
+        self.assertIn(serializer2.data, res.data)
+        self.assertNotIn(serializer3.data, res.data)
+
+
+class RecipeImageUploadAPITest(TestCase):
+    '''test suite for recipe image upload'''
+
+    def setUp(self):
+        self.user = create_sample_user()
+        self.client = APIClient()
+        self.client.force_authenticate(self.user)
+        self.recipe = create_sample_recipe(user=self.user)
+
+    def tearDown(self):
+        self.recipe.image.delete()
+
+    def test_upload_image_success(self):
+        '''test recipe image are uploaded successfully'''
+        url = compute_recipe_image_upload_url(self.recipe.id)
+
+        with tempfile.NamedTemporaryFile(suffix='.jpg') as ntf:
+            img = Image.new('RGB', (10, 10))
+            img.save(ntf, format='JPEG')
+            ntf.seek(0)
+
+            res = self.client.post(url, {'image': ntf}, format='multipart')
+
+        self.recipe.refresh_from_db()
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn('image', res.data)
+        self.assertTrue(os.path.exists(self.recipe.image.path))
+
+    def test_upload_image_bad_request(self):
+        '''test uploading invalid image file'''
+        url = compute_recipe_image_upload_url(self.recipe.id)
+        res = self.client.post(url, {'image': 'not-img'}, format='multipart')
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
